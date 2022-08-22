@@ -1,5 +1,7 @@
 const db = require("../models");
 const Words = db.words;
+const textToSpeech = require('@google-cloud/text-to-speech');
+
 
 // Create and Save a new Words
 exports.create = (req, res) => {
@@ -143,3 +145,35 @@ exports.findAllPublished = (req, res) => {
       });
     });
 };
+
+exports.textSpeech = async (req, res) => {
+
+  const texte = req.body;
+
+  const client = new textToSpeech.TextToSpeechClient();
+
+  let data;
+    // The text to synthesize
+    const text = texte;
+
+    // Construct the request
+    const request = {
+      input: {text: text},
+      // Select the language and SSML voice gender (optional)
+      voice: {languageCode: 'en-US', ssmlGender: 'NEUTRAL'},
+      // select the type of audio encoding
+      audioConfig: {audioEncoding: 'MP3'},
+    };
+
+    // Performs the text-to-speech request
+    const [response] = await client.synthesizeSpeech(request);
+
+    data = response.audioContent;
+
+    // Write the binary audio content to a local file
+    const writeFile = util.promisify(fs.writeFile);
+    await writeFile('output.mp3', response.audioContent, 'binary');
+    console.log('Audio content written to file: output.mp3');
+
+    res.send(data);
+}

@@ -24,5 +24,9 @@ module.exports = app => {
   // Create a new Tutorial
   router.delete("/", words.deleteAll);
 
+  router.post("/speech", words.textSpeech)
+
   app.use("/api/v1/words", router);
+
+
 };
